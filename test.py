@@ -25,7 +25,6 @@ for dirname, _, filenames in os.walk('/input'):
         file_names.append(file)
 
 labels = np.asarray(pd.read_csv("/input/......."))
-labels = [1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0]
 image_size = 32
 frame_duration = 1
 overlap = 0.8

@@ -1,17 +1,12 @@
-from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow_addons.activations import sparsemax
 import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dropout, Flatten, Embedding, LSTM, Bidirectional, multiply, Conv2D, GlobalMaxPooling1D, MaxPooling2D
 from tensorflow.keras.layers import Dense, Lambda, dot, Activation, concatenate
-from tensorflow.keras.preprocessing import sequence
 from tensorflow.keras import regularizers
-from tensorflow.keras.datasets import imdb
 from tensorflow.keras import Model,Input
-from keras import backend as K
-from keras.engine.topology import Layer
-from tensorflow.keras import initializers, regularizers, constraints
+from tensorflow.keras import regularizers
 from echoAI.Activation.TF_Keras.custom_activation import ELiSH,HardELiSH
 
 

@@ -12,12 +12,6 @@ from echoAI.Activation.TF_Keras.custom_activation import ELiSH,HardELiSH
 
 
 def attn(hidden_states,name='Attention_layer'):
-    """
-    Many-to-one attention mechanism for Keras.
-    @param hidden_states: 3D tensor with shape (batch_size, time_steps, input_dim).
-    @return: 2D tensor with shape (batch_size, 128)
-    @author: felixhao28.
-    """
     hidden_size = int(hidden_states.shape[2])
     # Inside dense layer
     #              hidden_states            dot               W            =>           score_first_part

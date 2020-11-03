@@ -175,8 +175,8 @@ def make_frames(df,frame_duration):
     return np.array(frames),epoch_data_frames
     
 
-'''
-def make_frames(df,frame_duration):
+
+def make_frames1(df,frame_duration):
     '''
     in: dataframe or array with all channels, frame duration in seconds
     out: array of theta, alpha, beta averages for each probe for each time step
@@ -215,7 +215,7 @@ def make_frames(df,frame_duration):
     epoch_data_frames = np.vstack(epoch_data_frames)
     print(frames.shape,epoch_data_frames.shape)
     return frames,epoch_data_frames
- '''   
+    
 
 
 def make_data_pipeline(file_names,labels,image_size,frame_duration,overlap):
@@ -263,8 +263,8 @@ def make_data_pipeline(file_names,labels,image_size,frame_duration,overlap):
         
     return X,np.array(y),X_features
 
-'''
-def make_data_pipeline(file_names,labels,image_size,frame_duration,overlap):
+
+def make_data_pipeline1(file_names,labels,image_size,frame_duration,overlap):
     '''
     IN: 
     file_names - list of strings for each input file (one for each subject)
@@ -308,4 +308,4 @@ def make_data_pipeline(file_names,labels,image_size,frame_duration,overlap):
         
         
     return X,np.array(y),X_eeg
-    '''
+    

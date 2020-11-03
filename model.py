@@ -174,7 +174,7 @@ def make_bilstm_model():
 
 def make_atten_bilstm_model():
   """Builds a bi-directional LSTM model."""
-  inputs = Input(shape=(x_fft_train.shape[1],), dtype='int64', name='fft')
+  inputs = Input(shape=(x_stft_train.shape[1],), dtype='int64', name='stft')
   #x = Lambda(rgb_to_grayscale, rgb_to_grayscale_output_shape)(input_tensor)
   #inputs = input_shape
   embedding_layer = Embedding(int(max_features+1),128)(inputs)

@@ -34,7 +34,7 @@ def build_att_cnn_model():
     input_shape = (img_rows, img_cols, 3)
     
     inputs = Input(shape=input_shape)
-                # layer_1   # 4个3*3*32
+               
 
     h_conv1_1 = Conv2D(filters=32, kernel_size=(3,3), name='conv1_1',kernel_regularizer=regularizers.l2(0.001))(inputs)
     h_conv1_1 = ELiSH()(h_conv1_1)
@@ -53,7 +53,7 @@ def build_att_cnn_model():
     h_attention1 = attn(h_squeez1,name='h_attention1')
     #print(h_attention1.shape)
     
-                # layer_2
+               
     h_conv2_1 = Conv2D(filters=64, kernel_size=(3,3), name='conv2_1',kernel_regularizer=regularizers.l2(0.001))(h_pool1)
     h_conv2_1 = ELiSH()(h_conv2_1)
     h_conv2_2 = Conv2D(filters=64, kernel_size=(3,3), name='conv2_2',kernel_regularizer=regularizers.l2(0.001))(h_conv2_1)
@@ -70,7 +70,7 @@ def build_att_cnn_model():
     h_attention2 = attn(h_squeez2,name='h_attention2')
     #print(h_attention2.shape)
     
-                # layer_3
+             
     #h_conv3_1 = Conv2D(filters=128, kernel_size=(3,3), activation='relu', name='conv3_1')(h_pool2)
     #h_conv3_2 = Conv2D(filters=128, kernel_size=(3,3), activation='relu', name='conv3_2')(h_conv3_1)
     #h_pool3 = MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='same', name='max_pooling_3')(h_conv3_2)    # shape is (None, 4, 4, 128)
@@ -84,7 +84,7 @@ def build_att_cnn_model():
     #h_attention3 = attn(h_squeez3,name='h_attention3')
     #print(h_attention3.shape)
     
-                # layer_4
+           
     h_conv4_1 = Conv2D(filters=256, kernel_size=(3,3), activation='relu', name='conv4_1',kernel_regularizer=regularizers.l2(0.001))(h_pool2)
     h_conv4_1 = ELiSH()(h_conv4_1)
     h_pool4 = MaxPooling2D(pool_size=(2,2), strides=(2,2), padding='same', name='max_pooling_4')(h_conv4_1)    # shape is (None, 4, 4, 128)

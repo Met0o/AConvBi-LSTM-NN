@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dropout, Flatten, Embedding, LSTM, Bidirecti
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping,ModelCheckpoint
 from keras.models import load_model
-from model import build_att_cnn_model,build_attpool_cnn_model,build_cnn_model,make_bilstm_model,make_atten_bilstm_model,make_atten1_bilstm_model
+from model import build_att_cnn_model,build_att_pool_cnn_model,build_cnn_model,make_bilstm_model,make_atten_bilstm_model,make_atten1_bilstm_model
 
 locs = scipy.io.loadmat('/input/Neuroscan_locs_orig.mat')
     locs_3d = locs['A']

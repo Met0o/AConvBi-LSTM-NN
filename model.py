@@ -10,6 +10,57 @@ from tensorflow.keras import regularizers
 from echoAI.Activation.TF_Keras.custom_activation import ELiSH,HardELiSH
 
 
+class Attention(Layer):
+    def __init__(self, local_shape, global_shape, method):
+        super(Attention, self).__init__()
+        self.__method = method
+
+        self.__lcf_channel = local_shape[2]
+        self.__lcf_H = local_shape[0]
+        self.__lcf_W = local_shape[1]
+        self.__glf_channel = global_shape
+
+        self.__project = Dense(self.__lcf_channel, use_bias=False)
+        self.__pc = Dense(1, use_bias=False)
+
+    def __call__(self, inputs, *args, **kwargs):
+        lcf = inputs[0]
+        gbf = inputs[1]
+        gbf_pj = self.__project(gbf) if self.__glf_channel != self.__lcf_channel else gbf   # (bs, c)
+        lcf_rs = tf.reshape(lcf, [-1, self.__lcf_H * self.__lcf_W, self.__lcf_channel])     # (bs, h*w, c)
+        if self.__method == 'dp':
+            c = tf.squeeze(tf.matmul(lcf_rs, tf.expand_dims(gbf_pj, -1)), -1)
+            # (bs, h*w, c) matmul (bs, c, 1) -> (bs, h*w, 1) -> (bs, h*w)
+        elif self.__method == 'pc':
+            add = tf.add(lcf_rs, tf.expand_dims(gbf_pj, -2))   # (bs, h*w, c)
+            c = tf.squeeze(self.__pc(add), -1)  # (bs, h*w)
+        else:
+            c = None
+            lcf_rs = None
+            print('No such method', self.__method)
+            exit(0)
+        a = tf.nn.softmax(c, 1)     # (bs, h*w)
+        ga = tf.squeeze(tf.matmul(tf.transpose(lcf_rs, [0, 2, 1]), tf.expand_dims(a, -1)), -1)
+        # (bs, c, h*w) matmul (bs, h*w, 1) -> (bs, c)
+        return ga, tf.reshape(a, [-1, self.__lcf_H, self.__lcf_W])
+
+    
+class ConvBlock(Layer):
+    def __init__(self, filters, kernel_size, padding='same', pooling=False):
+        super(ConvBlock, self).__init__()
+        self.__filters = filters
+        self.__ks = kernel_size
+        self.__padding = padding
+        self.__pooling = pooling
+
+    def __call__(self, inputs, *args, **kwargs):
+        _x = Conv2D(self.__filters, self.__ks, padding=self.__padding)(inputs)
+        _x = BatchNormalization()(_x)
+        _x = ELiSH()(_x)
+        if self.__pooling:
+            _x = MaxPooling2D()(_x)
+        return _x
+
 
 def attn(hidden_states,name='Attention_layer'):
     hidden_size = int(hidden_states.shape[2])
@@ -109,7 +160,43 @@ def build_att_cnn_model():
     model = Model(inputs, dense2)
     #return dense2
     return model
+
+
+def build_att_pool_cnn_model():
+    # VGG_NET 32       # [samples, W, H, colors]
+    input_shape = (img_rows, img_cols, 3)
     
+    inputs = Input(shape=input_shape)
+    
+    _layer = ConvBlock(64, 3)(inputs)
+    _layer = ConvBlock(128, 3)(_layer)
+    c1 = ConvBlock(256, 3, pooling=False)(_layer)
+    c1 = AveragePooling2D(pool_size=(2,2), strides=(2,2), padding='same', name='p1')(c1)
+    c2 = ConvBlock(512, 3, pooling=False)(c1)
+    c2 = AveragePooling2D(pool_size=(2,2), strides=(2,2), padding='same', name='p2')(c2)
+    c3 = ConvBlock(512, 3, pooling=False)(c2)
+    c3 = AveragePooling2D(pool_size=(2,2), strides=(2,2), padding='same', name='p3')(c3)
+    _layer1 = ConvBlock(512, 3, pooling=True)(c3)
+    _layer = ConvBlock(512, 3, pooling=True)(_layer1)
+    _layer = Flatten()(_layer)
+    _g = Dense(512, activation='relu')(_layer)
+    att1_f, att1_map = Attention((16, 16, 256), 512, method='pc')([c1, _g])
+    att2_f, att2_map = Attention((8, 8, 512), 512, method='pc')([c2, _g])
+    att3_f, att3_map = Attention((4, 4, 512), 512, method='pc')([c3, _g])
+    f_concat = tf.concat([att1_f, att2_f, att3_f], axis=1)
+    #f_att = Flatten()(f_concat)
+    #merged = concatenate([f_att,_layer])
+    #_g = Dense(512, activation='relu')(merged)
+    dense1 = Dense(256, activation='relu',kernel_regularizer=regularizers.l2(0.001))(f_concat)
+    #dense1 = Dense(256, activation='relu',kernel_regularizer=regularizers.l2(0.001))(flatten)
+    dense1 = Dropout(0.5)(dense1)
+    dense2 = Dense(64, activation='relu',kernel_regularizer=regularizers.l2(0.001))(dense1)
+    #outputs = Dense(num_classes, activation='softmax')(dense2)
+    model = Model(inputs, dense2)
+    #return dense2
+    return model
+
+
 def build_cnn_model():
     # VGG_NET 32       # [samples, W, H, colors]
     input_shape = (img_rows, img_cols, 3)

@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dropout, Flatten, Embedding, LSTM, Bidirecti
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping,ModelCheckpoint
 from keras.models import load_model
-from model import build_att_cnn_model,build_cnn_model,make_bilstm_model,make_atten_bilstm_model,make_atten1_bilstm_model
+from model import build_att_cnn_model,build_attpool_cnn_model,build_cnn_model,make_bilstm_model,make_atten_bilstm_model,make_atten1_bilstm_model
 
 locs = scipy.io.loadmat('/input/Neuroscan_locs_orig.mat')
     locs_3d = locs['A']
@@ -78,16 +78,16 @@ print("REPLICAS: ", strategy.num_replicas_in_sync)
 '''
 
 with strategy.scope():
-    atten_cnn = build_att_cnn_model()
+    atten_cnn = build_attpool_cnn_model()
     atten_bilstm = make_atten_bilstm_model()
-    x = multiply([cnn.output, atten_bilstm.output])
+    x = multiply([atten_cnn.output, atten_bilstm.output])
     #x = build_cnn_model()
     #x = make_bilstm_model()
     predictions = Dense(num_classes)(x)
     predictions = sparsemax(predictions)
     #predictions = Dense(num_classes, activation='softmax')(cnn.output)
     #predictions = Dense(num_classes, activation='softmax')(atten_bilstm.output)
-    model = Model(inputs=[cnn.input, atten_bilstm.input], outputs=predictions)
+    model = Model(inputs=[atten_cnn.input, atten_bilstm.input], outputs=predictions)
     #model = Model(inputs=atten_bilstm.input, outputs=predictions)
     #model = Model(inputs=cnn.input, outputs=predictions)
     #flatten = model.Flatten()

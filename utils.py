@@ -10,7 +10,7 @@ from scipy.interpolate import griddata
 
 theta_band = (4,8)
 alpha_band = (8,12)
-beta_band = (12,40)
+delta_band = (1,4)
 
 
 def azim_equidist_projection(x, y, z, scale=1.0):
@@ -47,14 +47,14 @@ def get_stft(eeg_signal):
     Y = (abs(Zxx))
     return f,abs(Y)
     
-def theta_alpha_beta_averages(f,Y):
+def theta_alpha_delta_averages(f,Y):
     theta_range = theta_band
     alpha_range = alpha_band
-    beta_range = beta_band
+    delta_range = delta_band
     theta = Y[(f>theta_range[0]) & (f<=theta_range[1])].mean()
     alpha = Y[(f>alpha_range[0]) & (f<=alpha_range[1])].mean()
-    beta = Y[(f>beta_range[0]) & (f<=beta_range[1])].mean()
-    return theta, alpha, beta
+    delta = Y[(f>delta_range[0]) & (f<=delta_range[1])].mean()
+    return theta, alpha, delta
     
     
 def make_steps(samples,frame_duration,overlap):
@@ -86,7 +86,7 @@ def gen_images(locs, features, n_gridpoints, normalize=True,
     :param features: Feature matrix as [n_samples, n_features]
                                 Features are as columns.
                                 Features corresponding to each frequency band are concatenated.
-                                (alpha1, alpha2, ..., beta1, beta2,...)
+                                (alpha1, alpha2, ..., delta1, delta2,...)
     :param n_gridpoints: Number of pixels in the output images
     :param normalize:   Flag for whether to normalize each band over all samples
     :param augment:     Flag for generating augmented images
@@ -146,7 +146,7 @@ def gen_images(locs, features, n_gridpoints, normalize=True,
 def make_frames(df,frame_duration):
     '''
     in: dataframe or array with all channels, frame duration in seconds
-    out: array of theta, alpha, beta averages for each probe for each time step
+    out: array of theta, alpha, delta averages for each probe for each time step
         shape: (n-frames,m-probes,k-brainwave bands)
     '''
     Fs = 512.0
@@ -164,8 +164,8 @@ def make_frames(df,frame_duration):
             for channel in df.columns:
                 snippet = np.array(df.loc[steps[i][0]:steps[i][1],int(channel)])
                 f,Y =  get_stft(snippet)
-                theta, alpha, beta = theta_alpha_beta_averages(f,Y)
-                frame.append([theta, alpha, beta])
+                theta, alpha, delta = theta_alpha_delta_averages(f,Y)
+                frame.append([theta, alpha, delta])
                 epoch_data_frame.append(snippet)
             
         frames.append(frame)
@@ -179,7 +179,7 @@ def make_frames(df,frame_duration):
 def make_frames1(df,frame_duration):
     '''
     in: dataframe or array with all channels, frame duration in seconds
-    out: array of theta, alpha, beta averages for each probe for each time step
+    out: array of theta, alpha, delta averages for each probe for each time step
         shape: (n-frames,m-probes,k-brainwave bands)
     '''
     Fs = 500.0
@@ -198,9 +198,9 @@ def make_frames1(df,frame_duration):
                 snippet = np.array(df.loc[steps[i][0]:steps[i][1],int(channel)])
                 f,Y,t =  get_stft(snippet)
                 print(snippet.shape,Y.shape)
-                theta, alpha, beta = theta_alpha_beta_averages(f,Y)
-                #print(theta,alpha,beta)
-                frame.append([theta, alpha, beta])
+                theta, alpha, delta = theta_alpha_delta_averages(f,Y)
+                #print(theta,alpha,delta)
+                frame.append([theta, alpha, delta])
                 epo_snip = np.array(np.split(snippet,len(t)-1, ))
                 epoch_data_frame.append(epo_snip)
         frames.append(frame)
